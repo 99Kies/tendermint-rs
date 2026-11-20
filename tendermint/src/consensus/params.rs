@@ -66,6 +66,9 @@ pub struct AbciParams {
 
 // Todo: How are these key types created?
 fn key_type(s: &str) -> public_key::Algorithm {
+    if s == "ml_dsa_65" {
+        return public_key::Algorithm::Mldsa65;
+    }
     if s == "Ed25519" || s == "ed25519" {
         return public_key::Algorithm::Ed25519;
     }
@@ -181,6 +184,7 @@ mod v0_34 {
                     .map(|k| match k {
                         public_key::Algorithm::Ed25519 => "ed25519".to_string(),
                         public_key::Algorithm::Secp256k1 => "secp256k1".to_string(),
+                        public_key::Algorithm::Mldsa65 => "ml_dsa_65".to_string(),
                     })
                     .collect(),
             }
@@ -275,6 +279,7 @@ mod v0_37 {
                     .map(|k| match k {
                         public_key::Algorithm::Ed25519 => "ed25519".to_string(),
                         public_key::Algorithm::Secp256k1 => "secp256k1".to_string(),
+                        public_key::Algorithm::Mldsa65 => "ml_dsa_65".to_string(),
                     })
                     .collect(),
             }
@@ -370,6 +375,7 @@ mod v0_38 {
                     .map(|k| match k {
                         public_key::Algorithm::Ed25519 => "ed25519".to_string(),
                         public_key::Algorithm::Secp256k1 => "secp256k1".to_string(),
+                        public_key::Algorithm::Mldsa65 => "ml_dsa_65".to_string(),
                     })
                     .collect(),
             }

@@ -10,6 +10,22 @@ impl crate::crypto::signature::Verifier for Verifier {
     fn verify(pubkey: PublicKey, msg: &[u8], signature: &Signature) -> Result<(), Error> {
         #[allow(unreachable_patterns)]
         match pubkey {
+            #[cfg(feature = "mldsa65")]
+            PublicKey::Mldsa65(pk) => {
+                use fips204::traits::{SerDes, Verifier as _};
+                let key = fips204::ml_dsa_65::PublicKey::try_from_bytes(*pk.as_bytes())
+                    .map_err(|_| Error::MalformedPublicKey)?;
+                let sig = signature
+                    .as_bytes()
+                    .try_into()
+                    .map_err(|_| Error::MalformedSignature)?;
+                // CometBFT 0.40 signs the canonical vote bytes with an empty context.
+                if key.verify(msg, sig, &[]) {
+                    Ok(())
+                } else {
+                    Err(Error::VerificationFailed)
+                }
+            },
             PublicKey::Ed25519(pk) => {
                 let pubkey = ed25519_consensus::VerificationKey::try_from(pk)
                     .map_err(|_| Error::MalformedPublicKey)?;

@@ -10,8 +10,10 @@ use tendermint_proto::Protobuf;
 
 use crate::{error::Error, prelude::*};
 
-/// The expected length of all currently supported signatures, in bytes.
+/// Expected length of the supported classical signatures, in bytes.
 pub const SIGNATURE_LENGTH: usize = 64;
+/// Exact length of a packed FIPS 204 ML-DSA-65 signature.
+pub const ML_DSA_65_SIGNATURE_LENGTH: usize = 3309;
 
 /// Signatures
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -64,10 +66,11 @@ impl Signature {
         if bytes.is_empty() {
             return Ok(None);
         }
-        if bytes.len() != SIGNATURE_LENGTH {
+        if !matches!(bytes.len(), SIGNATURE_LENGTH | ML_DSA_65_SIGNATURE_LENGTH) {
             return Err(Error::signature_invalid(format!(
-                "expected signature to be {} bytes long, but was {} bytes",
+                "expected a signature of {} or {} bytes, got {}",
                 SIGNATURE_LENGTH,
+                ML_DSA_65_SIGNATURE_LENGTH,
                 bytes.len()
             )));
         }

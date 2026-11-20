@@ -117,6 +117,11 @@ tendermint_pb_modules! {
             let sum = &value
                 .sum
                 .ok_or_else(|| Error::invalid_key("empty sum".to_string()))?;
+            if let Sum::Mldsa65(b) = sum {
+                let key = crate::public_key::Mldsa65::from_bytes(b)?;
+                let digest = Sha256::digest(key.as_bytes());
+                return Ok(Id(digest[..LENGTH].try_into().unwrap()));
+            }
             if let Sum::Ed25519(b) = sum {
                 let digest = Sha256::digest(b);
                 return Ok(Id(digest[..LENGTH].try_into().unwrap()))
@@ -171,6 +176,10 @@ mod key_conversions {
         fn from(pub_key: PublicKey) -> Id {
             match pub_key {
                 PublicKey::Ed25519(pk) => Id::from(pk),
+                PublicKey::Mldsa65(pk) => {
+                    let digest = Sha256::digest(pk.as_bytes());
+                    Id(digest[..LENGTH].try_into().unwrap())
+                },
                 #[cfg(feature = "secp256k1")]
                 PublicKey::Secp256k1(pk) => Id::from(pk),
             }
